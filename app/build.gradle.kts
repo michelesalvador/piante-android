@@ -59,4 +59,5 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.maplibre.compose)
     implementation(libs.maps.compose)
+    implementation(libs.androidx.navigation.compose)
 }

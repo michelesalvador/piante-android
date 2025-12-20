@@ -1,56 +1,52 @@
 package org.plantsmap
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.ComposeMapColorScheme
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerInfoWindowComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import org.plantsmap.model.Plant
 
 @Composable
-fun MapGoogle(viewModel: MapViewModel, innerPadding: PaddingValues) {
+fun Home(navController: NavController, viewModel: MapViewModel) {
 
     val plants by viewModel.plants.collectAsState()
-    val isLoading by viewModel.isLoading.observeAsState()
-    var selectedPlant by remember { mutableStateOf<Plant?>(null) }
+    val isLoading by viewModel.isLoading.collectAsState()
+    val selectedPlant by viewModel.selectedPlant.collectAsState()
 
-    /*LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) {
         viewModel.getPlants()
-    }*/
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         GoogleMap(
             cameraPositionState = rememberCameraPositionState {
                 position = CameraPosition.fromLatLngZoom(LatLng(45.8869, 12.29733), 12F)
@@ -61,25 +57,20 @@ fun MapGoogle(viewModel: MapViewModel, innerPadding: PaddingValues) {
                 rotationGesturesEnabled = false
             ),
             onMapClick = {
-                selectedPlant = null
+                viewModel.onPlantSelected(null)
             },
-            onMapLoaded = {
-                viewModel.getPlants()
-            },
-            contentPadding = innerPadding
+            contentPadding = innerPadding,
+            mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
-            val context = LocalContext.current
             plants.forEach { plant ->
                 MarkerInfoWindowComposable(
                     keys = arrayOf(selectedPlant == plant),
                     state = MarkerState(position = LatLng(plant.latitude, plant.longitude)),
                     onClick = {
-                        selectedPlant = plant
+                        viewModel.onPlantSelected(plant)
                         false
                     },
-                    onInfoWindowClick = {
-                        Toast.makeText(context, plant.species.scientificName, Toast.LENGTH_SHORT).show()
-                    },
+                    onInfoWindowClick = { navController.navigate(Routes.PLANT_DETAIL) },
                     infoContent = {
                         Surface(
                             modifier = Modifier
@@ -92,7 +83,7 @@ fun MapGoogle(viewModel: MapViewModel, innerPadding: PaddingValues) {
                                         offset = DpOffset(0.dp, 4.dp)
                                     )
                                 ),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             val description = buildString {
                                 plant.number?.let { appendLine("Numero: $it") }
@@ -118,8 +109,10 @@ fun MapGoogle(viewModel: MapViewModel, innerPadding: PaddingValues) {
                 }
             }
         }
-        if (isLoading == true) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        if (isLoading) {
+            Box(Modifier.fillMaxSize()) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            }
         }
     }
 }
