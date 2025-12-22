@@ -36,7 +36,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun Home(navController: NavController, viewModel: MapViewModel) {
+fun Home(viewModel: AppViewModel, navController: NavController) {
 
     val plants by viewModel.plants.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -114,5 +114,6 @@ fun Home(navController: NavController, viewModel: MapViewModel) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
         }
+        Access(viewModel, navController, innerPadding)
     }
 }

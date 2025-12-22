@@ -25,10 +25,3 @@ data class Species(
     val commonName: String,
     val warning: String?
 )
-
-@Serializable
-data class User(
-    val id: Int,
-    val name: String,
-    val email: String
-)

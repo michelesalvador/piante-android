@@ -1,10 +1,13 @@
 package org.plantsmap
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -13,18 +16,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val viewModel = ViewModelProvider(this)[MapViewModel::class.java]
+        val viewModel = AppViewModel()
         setContent {
             val navController = rememberNavController()
+            val toastMessage by viewModel.toastMessage.collectAsState()
+            LaunchedEffect(toastMessage) {
+                toastMessage?.let {
+                    Toast.makeText(this@MainActivity, it, Toast.LENGTH_LONG).show()
+                    viewModel.onToastShown()
+                }
+            }
             Theme {
-                NavHost(navController = navController, startDestination = Routes.HOME, builder = {
-                    composable(Routes.HOME) {
-                        Home(navController, viewModel)
-                    }
-                    composable(Routes.PLANT_DETAIL) {
-                        PlantDetail(viewModel)
-                    }
-                })
+                NavHost(navController, Routes.HOME) {
+                    composable(Routes.HOME) { Home(viewModel, navController) }
+                    composable(Routes.PLANT_DETAIL) { PlantDetail(viewModel) }
+                    composable(Routes.LOGIN) { Login(viewModel, navController) }
+                }
             }
         }
     }

@@ -30,7 +30,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun PlantDetail(viewModel: MapViewModel) {
+fun PlantDetail(viewModel: AppViewModel) {
 
     val selectedPlant by viewModel.selectedPlant.collectAsState()
 
