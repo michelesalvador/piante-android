@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,7 @@ fun PlantDetail(viewModel: AppViewModel) {
                             val markerId = if (plant == this) R.drawable.marker_selected else R.drawable.marker
                             MarkerComposable(
                                 state = MarkerState(position = LatLng(plant.latitude, plant.longitude)),
+                                anchor = Offset(.5F, .5F),
                                 onClick = { true }
                             ) {
                                 Image(
