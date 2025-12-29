@@ -9,9 +9,8 @@ import org.plantsmap.model.Credentials
 import org.plantsmap.model.Plant
 import org.plantsmap.model.User
 
-class AppViewModel : ViewModel() {
+class AppViewModel(private val appRepository: AppRepository) : ViewModel() {
 
-    val appRepository = AppRepository()
     val plants = MutableStateFlow<List<Plant>>(emptyList())
     val isLoading = MutableStateFlow(false)
     val selectedPlant = MutableStateFlow<Plant?>(null)

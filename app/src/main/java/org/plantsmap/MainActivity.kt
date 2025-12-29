@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,7 +17,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val viewModel = AppViewModel()
+        val factory = AppViewModelFactory((application as PlantsMapApplication).appRepository)
+        val viewModel: AppViewModel by viewModels { factory }
         setContent {
             val navController = rememberNavController()
             val toastMessage by viewModel.toastMessage.collectAsState()
