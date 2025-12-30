@@ -3,18 +3,23 @@ package org.plantsmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.plantsmap.model.AppRepository
 import org.plantsmap.model.Credentials
 import org.plantsmap.model.Plant
-import org.plantsmap.model.User
 
 class AppViewModel(private val appRepository: AppRepository) : ViewModel() {
 
     val plants = MutableStateFlow<List<Plant>>(emptyList())
     val isLoading = MutableStateFlow(false)
     val selectedPlant = MutableStateFlow<Plant?>(null)
-    val user = MutableStateFlow<User?>(null)
+    val user = appRepository.user.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(3000),
+        initialValue = null
+    )
     val toastMessage = MutableStateFlow<String?>(null)
     val navigateBack = MutableStateFlow(false)
     private var arePlantsLoaded = false
@@ -43,7 +48,6 @@ class AppViewModel(private val appRepository: AppRepository) : ViewModel() {
         viewModelScope.launch {
             appRepository.login(Credentials(email, password))
                 .onSuccess {
-                    user.value = it
                     navigateBack.value = true
                 }.onFailure {
                     toastMessage.value = it.message
@@ -60,7 +64,6 @@ class AppViewModel(private val appRepository: AppRepository) : ViewModel() {
             user.value?.token?.let { token ->
                 appRepository.logout(token)
                     .onSuccess {
-                        user.value = null
                         toastMessage.value = it
                     }.onFailure {
                         toastMessage.value = it.message

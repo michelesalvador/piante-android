@@ -14,9 +14,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 
-class AppRepository {
+class AppRepository(private val userDataStore: UserDataStore) {
 
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
@@ -25,6 +26,8 @@ class AppRepository {
             })
         }
     }
+
+    val user: Flow<User?> = userDataStore.user
 
     suspend fun getPlants(): Result<List<Plant>> {
         return try {
@@ -46,7 +49,9 @@ class AppRepository {
                 setBody(credentials)
             }
             if (response.status == HttpStatusCode.OK) {
-                Result.success(response.body())
+                val user = response.body<User>()
+                userDataStore.saveUser(user)
+                Result.success(user) // Returned user is not used by AppViewModel
             } else {
                 val errorBody = response.bodyAsText()
                 val errorMessage = Json.decodeFromString<GenericResponse>(errorBody).message
@@ -64,6 +69,7 @@ class AppRepository {
             }
             val message = response.body<GenericResponse>().message
             if (response.status == HttpStatusCode.OK) {
+                userDataStore.clearUser()
                 Result.success(message)
             } else {
                 throw Exception(message)
